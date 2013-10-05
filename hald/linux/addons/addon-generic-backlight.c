@@ -1,7 +1,7 @@
 /***************************************************************************
  * CVSID: $Id$
  *
- * addon-generic-backlight.c: 
+ * addon-generic-backlight.c:
  * Copyright (C) 2008 Danny Kukawka <danny.kukawka@web.de>
  *
  * Licensed under the Academic Free License version 2.1
@@ -33,11 +33,11 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h> 
+#include <unistd.h>
 
-#include <glib/gmain.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
+#include <glib/glib.h>
+#include <dbus/dbus.h>
+//#include <dbus/dbus-glib-lowlevel.h>
 
 #include "libhal/libhal.h"
 #include "../../logger.h"
@@ -60,7 +60,7 @@ get_backlight ()
 	int value;
 	char buf[64];
 	gchar sysfs_path[512];
-	
+
 	f = NULL;
 	value = -1;
 
@@ -79,7 +79,7 @@ get_backlight ()
 
 	errno = 0;
 	value = strtol (buf, NULL, 10);
-	if (errno != 0) { 
+	if (errno != 0) {
 		value = -1;
 	}
 
@@ -115,7 +115,7 @@ set_backlight (int level)
 		HAL_WARNING(("Could not open '%s'", sysfs_path));
 		goto out;
 	}
- 
+
 	if ((l = snprintf (buf, 4, "%d", level)) < 4) {
 		if (write (fd, buf, l) < 0) {
 			HAL_WARNING(("Could not write '%s' to '%s'", buf , sysfs_path));
@@ -123,8 +123,8 @@ set_backlight (int level)
 			/* everything okay */
 			ret = level;
 		}
-	} 
-		
+	}
+
 out:
 	if (fd >= 0)
 		close (fd);
@@ -160,7 +160,7 @@ filter_function (DBusConnection *connection, DBusMessage *message, void *userdat
 				reply = dbus_message_new_error (message,
 								"org.freedesktop.Hal.Device.LaptopPanel.Invalid",
 								"Brightness level is invalid");
-			} else {			
+			} else {
 				int return_code;
 				int set;
 
@@ -172,7 +172,7 @@ filter_function (DBusConnection *connection, DBusMessage *message, void *userdat
 
 				if (set == brightness)
 					return_code = 0;
-				else 
+				else
 					return_code = 1;
 
 				dbus_message_append_args (reply,
@@ -230,14 +230,14 @@ main (int argc, char *argv[])
 		HAL_ERROR (("No sysfs path specified"));
 		return -2;
 	}
-	
+
 	level_str = getenv ("HAL_PROP_LAPTOP_PANEL_NUM_LEVELS");
 	if (level_str != NULL) {
 		levels = atoi (level_str);
 	} else {
 		HAL_ERROR (("No laptop_panel.num_levels defined"));
 	}
-		
+
 	dbus_error_init (&err);
 	if ((halctx = libhal_ctx_init_direct (&err)) == NULL) {
 		HAL_ERROR (("Cannot connect to hald"));
